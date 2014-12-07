@@ -14,7 +14,7 @@
     )
   )
 
-;; Determine if exp is a map of valid expressions
+;; Determine if exp is yummy-object
 (defn yummy-object? [exp]
   (and
     (map? exp)
