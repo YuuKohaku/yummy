@@ -22,6 +22,8 @@
     (map? (exp :attrs))
     (vector? (exp :content))
     (every? yummy-valid? (exp :content))
+    (every? keyword? (keys (exp :attrs)))
+    (every? string? (vals (exp :attrs)))
   )
 )
 
@@ -42,10 +44,4 @@
   )
 )
 
-;; Determine if exp is valid yummy expression
-(defn yummy-tree? [expr]
-  (or
-    (yummy-atomic? expr)
-    (yummy-object? expr)
-  )
-)
+

@@ -14,4 +14,5 @@
    )
 )
 
-(println (yummy-tree? [{:tag :a :attrs {:key "val"} :content [23 25 {:tag :b :attrs {} :content []}]}, {:tag :a :attrs {:key "val"} :content [23 25 {:tag :b :attrs {} :content []}]}]))
+
+(println (yummy-object? (deserialize (serialize {:tag :a :attrs {:key "val"} :content [23 25 {:tag :b :attrs {} :content []}]}))))
