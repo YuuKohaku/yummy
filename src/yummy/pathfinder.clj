@@ -60,47 +60,51 @@
         cur (first comps),  
         nxt (rest waypoints),
         attrs (get-attrs comps)]
- ;;   (println "search " comps cur nxt attrs)
- ;;   (println exp)
- ;;   (println "-----------")
+;;    (println "search " comps cur nxt attrs)
+;;    (println exp)
+;;    (println "-----------")
     (cond
       (and 
         (= cur "*") 
         (empty? attrs)) (if (empty? nxt)
                           (list exp)
-;;                          (filter #(yummy-object? %) (exp :content))
                           (map (partial iterative-search nxt)
                               (retrieve exp (first nxt))))
        (and 
          (= cur "*") 
          (map? attrs)) (if (empty? nxt)
-                          (if (map-cmp (exp :attrs) attrs) (list exp) '())
-                          (map (partial iterative-search nxt)
-                              (retrieve exp (first waypoints))))
+                         (concat
+                           (if (map-cmp (exp :attrs) attrs) (list exp) '())
+                           (map #(retrieve % (first waypoints)) 
+                             (filter #(yummy-object? %) 
+                                     (exp :content))))
+                         (map (partial iterative-search nxt)
+                              (retrieve exp (first waypoints)))
+                         )
        
-      (and 
-        (= (keyword cur) (exp :tag))
-        (if (empty? attrs) 
-          true 
-          (map-cmp (exp :attrs) attrs))) (if (empty? nxt)
-                                        (list exp)
-                                        (map 
-                                          (partial iterative-search nxt) 
-                                          (filter #(yummy-object? %) 
-                                                  (exp :content))
-                                          ))
-      :else '()
-      )
+       (and 
+         (= (keyword cur) (exp :tag))
+         (if (empty? attrs) 
+           true 
+           (map-cmp (exp :attrs) attrs))) (if (empty? nxt)
+                             (list exp)
+                             (map 
+                               (partial iterative-search nxt) 
+                               (filter #(yummy-object? %) 
+                                       (exp :content))
+                               ))
+                               :else '()
+                               )
     ))
 
 (defn get-tag [path exp] 
-  (let [way (reduce #(if (and 
-                           (= %2 "..") 
-                           (not-empty %1)) 
-                       (pop %1) 
-                       (if (= %2 ".") %1 (conj %1 %2))) 
-                    [] 
-                    (str/split path #"/"))
+  (let [way (filter #(not (empty? %)) (reduce #(if (and 
+                                                   (= %2 "..") 
+                                                   (not-empty %1)) 
+                                               (pop %1) 
+                                               (if (= %2 ".") %1 (conj %1 %2))) 
+                                            [] 
+                                            (str/split path #"/")))
         head (first way)
         waypoints (rest way)]
     (flatten
@@ -109,36 +113,36 @@
       (map (partial iterative-search way) 
            (filter yummy-object? (retrieve exp head)))))
   ))
-
-(get-tag "a/*/*@[key=val]" {:tag :a 
-                            :attrs {:key "val" } 
-                            :content [23 
-                                      25 
-                                      {:tag :c 
-                                       :attrs {} 
-                                       :content [65 
-                                                 {:tag :e 
-                                                  :attrs {:k "5"} 
-                                                  :content ["branch"   
-                                                            {:tag :c 
-                                                             :attrs {} 
-                                                             :content [58]}]
-                                                  }] 
-                                       } 
-                                      {:tag :b 
-                                       :attrs {} 
-                                       :content [{:tag :c 
-                                                  :attrs {:key "val" :k "5"} 
-                                                  :content [2 3]} 
-                                                 {:tag :d 
-                                                  :attrs {:key "val"} 
-                                                  :content [2 
-                                                            3 
-                                                            {:tag :c 
-                                                             :attrs {} 
-                                                             :content [85 
-                                                                       {:tag :t
-                                                                        :attrs {}
-                                                                        :content []}]}]}
-                                                 ]}
-                                      ]})
+;;TODO: doc
+(get-tag "a/*@[key=val]/с" {:tag :a 
+                  :attrs {:key "val" } 
+                  :content [23 
+                            25 
+                            {:tag :c 
+                             :attrs {} 
+                             :content [65 
+                                       {:tag :e 
+                                        :attrs {:k "5"} 
+                                        :content ["branch"   
+                                                  {:tag :c 
+                                                   :attrs {} 
+                                                   :content [58]}]
+                                        }] 
+                             } 
+                            {:tag :b 
+                             :attrs {} 
+                             :content [{:tag :c 
+                                        :attrs {:key "val" :k "5"} 
+                                        :content [2 3]} 
+                                       {:tag :d 
+                                        :attrs {:key "val"} 
+                                        :content [2 
+                                                  3 
+                                                  {:tag :c 
+                                                   :attrs {} 
+                                                   :content [85 
+                                                             {:tag :t
+                                                              :attrs {}
+                                                              :content []}]}]}
+                                       ]}
+                            ]})
