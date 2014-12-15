@@ -1,6 +1,10 @@
-(ns yummy.core)
+(ns yummy.core
+  (:use yummy.validation)
+      (:use clojure.walk))
 
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
+(defn yummy-expr [tagname attrs content]
+  {:pre [(and (map? attrs) (vector? content) (every? yummy-valid? (vals attrs)))]}
+  {:tag (keyword tagname) :attrs (keywordize-keys attrs) :content content}
+    )
+
+(println (yummy-expr "c" {"k" 46} ["sf"]))

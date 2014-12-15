@@ -6,7 +6,7 @@
 
 (defn map-cmp [search attrs]
   {:pre [(map? search), (map? attrs)]}
-  (println "------comparing" search attrs)
+;;  (println "------comparing" search attrs)
   (let [df (diff search attrs)]
       (nil? (second df))))
 
@@ -18,7 +18,7 @@
 
 (defn retrieve [exp el]
   {:pre [(yummy-object? exp)]}
-  (println "retrieve " exp el)
+;;  (println "retrieve " exp el)
 (let [comps (str/split el #"@"),
       elem (first comps),
       attrs (get-attrs comps)]
@@ -55,12 +55,12 @@
 
 (defn iterative-search [waypoints exp]
   {:pre [(yummy-object? exp)]}
-  (println exp waypoints)
+;;  (println exp waypoints)
   (let [comps (str/split (first waypoints) #"@"), 
         cur (first comps),  
         nxt (rest waypoints),
         attrs (get-attrs comps)]
-    (println "search " comps cur nxt attrs)
+ ;;   (println "search " comps cur nxt attrs)
  ;;   (println exp)
  ;;   (println "-----------")
     (cond
@@ -110,35 +110,35 @@
            (filter yummy-object? (retrieve exp head)))))
   ))
 
-(get-tag "c/./*@[k=5]" {:tag :a 
-                        :attrs {:key "val" } 
-                        :content [23 
-                                  25 
-                                  {:tag :c 
-                                   :attrs {} 
-                                   :content [65 
-                                             {:tag :e 
-                                              :attrs {:k "5"} 
-                                              :content ["branch"   
-                                                        {:tag :c 
-                                                         :attrs {} 
-                                                         :content [58]}]
-                                              }] 
-                                   } 
-                                  {:tag :b 
-                                   :attrs {} 
-                                   :content [{:tag :c 
-                                              :attrs {:key "val" :k "5"} 
-                                              :content [2 3]} 
-                                             {:tag :d 
-                                              :attrs {:key "val"} 
-                                              :content [2 
-                                                        3 
-                                                        {:tag :c 
-                                                         :attrs {} 
-                                                         :content [85 
-                                                                   {:tag :t
-                                                                    :attrs {}
-                                                                    :content []}]}]}
-                                             ]}
-                                  ]})
+(get-tag "a/*/*@[key=val]" {:tag :a 
+                            :attrs {:key "val" } 
+                            :content [23 
+                                      25 
+                                      {:tag :c 
+                                       :attrs {} 
+                                       :content [65 
+                                                 {:tag :e 
+                                                  :attrs {:k "5"} 
+                                                  :content ["branch"   
+                                                            {:tag :c 
+                                                             :attrs {} 
+                                                             :content [58]}]
+                                                  }] 
+                                       } 
+                                      {:tag :b 
+                                       :attrs {} 
+                                       :content [{:tag :c 
+                                                  :attrs {:key "val" :k "5"} 
+                                                  :content [2 3]} 
+                                                 {:tag :d 
+                                                  :attrs {:key "val"} 
+                                                  :content [2 
+                                                            3 
+                                                            {:tag :c 
+                                                             :attrs {} 
+                                                             :content [85 
+                                                                       {:tag :t
+                                                                        :attrs {}
+                                                                        :content []}]}]}
+                                                 ]}
+                                      ]})
