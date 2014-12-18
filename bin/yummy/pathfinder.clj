@@ -78,8 +78,8 @@
                            (map #(retrieve % (first waypoints)) 
                              (filter #(yummy-object? %) 
                                      (exp :content))))
-                         (map (partial iterative-search nxt)
-                              (retrieve exp (first waypoints)))
+                         (map (partial iterative-search nxt) 
+                              (reduce #(concat %1 (filter yummy-object? (%2 :content))) '() (retrieve exp (first waypoints))))
                          )
        
        (and 
@@ -107,42 +107,12 @@
                                             (str/split path #"/")))
         head (first way)
         waypoints (rest way)]
+    (if (empty? way)
+    '()
     (flatten
     (if (= "$" head)
       (iterative-search waypoints exp)
       (map (partial iterative-search way) 
            (filter yummy-object? (retrieve exp head)))))
   ))
-;;TODO: doc
-(get-tag "a/*@[key=val]/с" {:tag :a 
-                  :attrs {:key "val" } 
-                  :content [23 
-                            25 
-                            {:tag :c 
-                             :attrs {} 
-                             :content [65 
-                                       {:tag :e 
-                                        :attrs {:k "5"} 
-                                        :content ["branch"   
-                                                  {:tag :c 
-                                                   :attrs {} 
-                                                   :content [58]}]
-                                        }] 
-                             } 
-                            {:tag :b 
-                             :attrs {} 
-                             :content [{:tag :c 
-                                        :attrs {:key "val" :k "5"} 
-                                        :content [2 3]} 
-                                       {:tag :d 
-                                        :attrs {:key "val"} 
-                                        :content [2 
-                                                  3 
-                                                  {:tag :c 
-                                                   :attrs {} 
-                                                   :content [85 
-                                                             {:tag :t
-                                                              :attrs {}
-                                                              :content []}]}]}
-                                       ]}
-                            ]})
+)
