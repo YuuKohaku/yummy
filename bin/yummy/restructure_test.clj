@@ -1,7 +1,6 @@
 (ns yummy.restructure-test
   (:require [clojure.test :refer :all]
-            [yummy.restructure :refer :all]
-            [yummy.pathfinder :refer :all]))
+            [yummy.restructure :refer :all]))
 
 (def tst-tag {:tag :a 
               :attrs {:key "val" }

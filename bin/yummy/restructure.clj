@@ -5,9 +5,15 @@
     (:use clojure.walk)
     (:require [clojure.string :as str]))
 
+;; restructure is a tool that alters specified tags names and attrs and does not 
+;; change the given tree structure. Rules for specifying tags to replace are the
+;; same that pathfinder uses.
+;; usage for this tool is set-tag [path yummy-tree replacement]. All tags matching for 
+;; path will get name and attrs specified in the replacement tag
+
 (declare iterative-replace)
 
-(defn restruct [exp wp new-tag]
+(defn- restruct [exp wp new-tag]
   {:pre [(yummy-object? exp)]}
  ;; (println "restruct " exp wp)
 (let [el (first wp),
@@ -66,7 +72,7 @@
     ))
   ))
 
-(defn iterative-replace [waypoints new-tag exp]   
+(defn- iterative-replace [waypoints new-tag exp]   
   {:pre [(yummy-object? exp)]}
 ;;  (println exp waypoints)
   (let [comps (str/split (first waypoints) #"@"), 
@@ -129,40 +135,3 @@
       (iterative-replace waypoints new-tag exp)
       (restruct exp way new-tag)))
   )
-
-(set-tag "a/*@[key=val]/c" 
-                   {:tag :a 
-                        :attrs {:key "val" } 
-                        :content [23 
-                                  25 
-                                  {:tag :c 
-                                   :attrs {} 
-                                   :content [65 
-                                             {:tag :e 
-                                              :attrs {:k "5"} 
-                                              :content ["branch"   
-                                                        {:tag :c 
-                                                         :attrs {} 
-                                                         :content [58]}]
-                                              }] 
-                                   } 
-                                  {:tag :b 
-                                   :attrs {} 
-                                   :content [{:tag :c 
-                                              :attrs {:key "val" :k "5"} 
-                                              :content [2 3]} 
-                                             {:tag :d 
-                                              :attrs {:key "val"} 
-                                              :content [2 
-                                                        3 
-                                                        {:tag :c 
-                                                         :attrs {} 
-                                                         :content [85 
-                                                                   {:tag :t
-                                                                    :attrs {}
-                                                                    :content []}]}]}
-                                             ]}
-                                  ]}
-             ;;      (str/split "a/b" #"/")
-                   {:tag :CHANGED :attrs {} :content ["replaced"]}
-                  )

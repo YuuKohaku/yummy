@@ -13,6 +13,3 @@
     (edn/read-string exp)
    )
 )
-
-
-(println (yummy-object? (deserialize (serialize {:tag :a :attrs {:key "val"} :content [23 25 {:tag :b :attrs {} :content []}]}))))
