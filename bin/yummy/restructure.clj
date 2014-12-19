@@ -9,7 +9,7 @@
 
 (defn restruct [exp wp new-tag]
   {:pre [(yummy-object? exp)]}
-;;  (println "restruct " exp wp)
+ ;; (println "restruct " exp wp)
 (let [el (first wp),
       nxt (rest wp),
       comps (str/split el #"@"),
@@ -19,16 +19,27 @@
     (and 
       (= elem "*")
       (empty? attrs)) 
-      (merge exp new-tag)
+    (if (empty? nxt)
+      (merge exp (assoc new-tag :content (exp :content)))
+      (assoc 
+        exp
+        :content
+        (reduce #(into %1 [%2]) 
+              [] 
+              (map #(if (yummy-object? %) 
+                      (restruct % nxt new-tag) 
+                      %) 
+                  (exp :content))
+              )))
     (and 
       (= elem "*")
       (map? attrs))
-    (assoc 
       (if (map-cmp (exp :attrs) attrs) 
         (if (empty? nxt) 
           (assoc new-tag :content (exp :content))
           (iterative-replace wp new-tag exp))
-        exp)
+    (assoc 
+        exp
       :content
       (reduce #(into %1 [%2]) 
               [] 
@@ -36,37 +47,35 @@
                       (restruct % wp new-tag) 
                       %) 
                   (exp :content))
-              ))
+              )))
     :else    
-    (assoc 
       (if (and 
             (= (keyword elem) (exp :tag)) 
-            (if (empty? attrs)
-              true 
-              (map-cmp (exp :attrs) attrs)))
+            (map-cmp (exp :attrs) attrs))
         (if (empty? nxt) 
           (assoc new-tag :content (exp :content))
           (iterative-replace wp new-tag exp))
-        exp)
-      :content
-      (reduce #(into %1 [%2]) [] (map #(if (yummy-object? %) 
+        (assoc
+          exp
+          :content
+          (reduce #(into %1 [%2]) [] (map #(if (yummy-object? %) 
                       (restruct % wp new-tag) 
                       %) 
                    (exp :content))
               ))  
     ))
-  )
+  ))
 
 (defn iterative-replace [waypoints new-tag exp]   
   {:pre [(yummy-object? exp)]}
-  (println exp waypoints)
+;;  (println exp waypoints)
   (let [comps (str/split (first waypoints) #"@"), 
         cur (first comps),  
         nxt (rest waypoints),
         attrs (get-attrs comps)]
  ;;   (println "replace " comps cur nxt attrs)
- ;;   (println exp)
-    (println "-----------")
+  ;;  (println exp)
+   ;; (println "-----------")
     (cond
       (and 
         (= cur "*") 
@@ -74,19 +83,23 @@
       (if (empty? nxt)
         (assoc new-tag :content (exp :content))
         (merge exp (restruct exp nxt new-tag)))
-       (and 
+      (and 
          (= cur "*") 
          (map? attrs)) 
-       (if (empty? nxt)
-         (if (map-cmp (exp :attrs) attrs) 
-           (assoc new-tag :content (exp :content))
-           exp)
-        (merge exp (restruct exp nxt new-tag)))
+      (if (map-cmp (exp :attrs) attrs)
+        (if (empty? nxt)
+         (assoc new-tag :content (exp :content))
+         (assoc exp 
+                :content 
+                (reduce #(into %1 [(if (yummy-object? %2)
+                                    (iterative-replace nxt new-tag %2)
+                                    %2)]) 
+                       [] 
+                       (exp :content))))
+      (merge exp (restruct exp waypoints new-tag)))
       (and 
         (= (keyword cur) (exp :tag))
-        (if (empty? attrs) 
-          true 
-          (map-cmp (exp :attrs) attrs))) 
+        (map-cmp (exp :attrs) attrs)) 
       (if (empty? nxt)
         (assoc new-tag :content (exp :content))
         (assoc exp :content 
@@ -102,24 +115,22 @@
 
 
 (defn set-tag [path exp new-tag] 
-  (let [way (reduce #(if (and 
-                           (= %2 "..") 
-                           (not-empty %1)) 
-                       (pop %1) 
-                       (if (= %2 ".") %1 (conj %1 %2))) 
-                    [] 
-                    (str/split path #"/"))
+  (let [way (filter #(not (empty? %)) 
+                    (reduce #(if (and 
+                                 (= %2 "..") 
+                                 (not-empty %1)) 
+                             (pop %1) 
+                             (if (= %2 ".") %1 (conj %1 %2))) 
+                          [] 
+                          (str/split path #"/")))
         head (first way)
         waypoints (rest way)]
-    (flatten
     (if (= "$" head)
       (iterative-replace waypoints new-tag exp)
-      (map (partial iterative-replace way new-tag) 
-           (filter yummy-object? (restruct exp way new-tag)))))
-  ))
+      (restruct exp way new-tag)))
+  )
 
-(iterative-replace (str/split "a/b/c" #"/")
-                   {:tag :cr :attrs {} :content ["replaced"]}
+(set-tag "a/*@[key=val]/c" 
                    {:tag :a 
                         :attrs {:key "val" } 
                         :content [23 
@@ -152,4 +163,6 @@
                                                                     :content []}]}]}
                                              ]}
                                   ]}
-                   )
+             ;;      (str/split "a/b" #"/")
+                   {:tag :CHANGED :attrs {} :content ["replaced"]}
+                  )

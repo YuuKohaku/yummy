@@ -6,7 +6,6 @@
 
 (defn map-cmp [search attrs]
   {:pre [(map? search), (map? attrs)]}
-;;  (println "------comparing" search attrs)
   (let [df (diff search attrs)]
       (nil? (second df))))
 
@@ -16,9 +15,8 @@
     (keywordize-keys 
       (apply hash-map (re-seq #"\w+" (second comps))))))
 
-(defn retrieve [exp el]
+(defn- retrieve [exp el]
   {:pre [(yummy-object? exp)]}
-;;  (println "retrieve " exp el)
 (let [comps (str/split el #"@"),
       elem (first comps),
       attrs (get-attrs comps)]
@@ -43,9 +41,7 @@
              (concat
                (if (and 
                      (= (keyword elem) (exp :tag)) 
-                     (if (empty? attrs)
-                       true 
-                       (map-cmp (exp :attrs) attrs)))
+                     (map-cmp (exp :attrs) attrs))
                  (list exp)
                  '())
                (map #(retrieve % el) (filter #(yummy-object? %) (exp :content)))
@@ -53,16 +49,12 @@
   )
 
 
-(defn iterative-search [waypoints exp]
+(defn- iterative-search [waypoints exp]
   {:pre [(yummy-object? exp)]}
-;;  (println exp waypoints)
   (let [comps (str/split (first waypoints) #"@"), 
         cur (first comps),  
         nxt (rest waypoints),
         attrs (get-attrs comps)]
-;;    (println "search " comps cur nxt attrs)
-;;    (println exp)
-;;    (println "-----------")
     (cond
       (and 
         (= cur "*") 
@@ -75,36 +67,38 @@
          (map? attrs)) (if (empty? nxt)
                          (concat
                            (if (map-cmp (exp :attrs) attrs) (list exp) '())
-                           (map #(retrieve % (first waypoints)) 
-                             (filter #(yummy-object? %) 
-                                     (exp :content))))
+                           (map #(retrieve % (first waypoints))
+                                (filter #(yummy-object? %) 
+                                (exp :content))))
                          (map (partial iterative-search nxt) 
-                              (reduce #(concat %1 (filter yummy-object? (%2 :content))) '() (retrieve exp (first waypoints))))
+                              (reduce #(concat %1 (filter yummy-object? (%2 :content))) 
+                                      '() 
+                                      (retrieve exp (first waypoints))))
                          )
        
        (and 
          (= (keyword cur) (exp :tag))
-         (if (empty? attrs) 
-           true 
-           (map-cmp (exp :attrs) attrs))) (if (empty? nxt)
-                             (list exp)
-                             (map 
-                               (partial iterative-search nxt) 
-                               (filter #(yummy-object? %) 
-                                       (exp :content))
-                               ))
-                               :else '()
-                               )
+         (map-cmp (exp :attrs) attrs)) 
+       (if (empty? nxt)
+         (list exp)
+         (map 
+           (partial iterative-search nxt) 
+           (filter #(yummy-object? %) 
+                   (exp :content))
+           ))
+       :else '()
+       )
     ))
 
 (defn get-tag [path exp] 
-  (let [way (filter #(not (empty? %)) (reduce #(if (and 
-                                                   (= %2 "..") 
-                                                   (not-empty %1)) 
-                                               (pop %1) 
-                                               (if (= %2 ".") %1 (conj %1 %2))) 
-                                            [] 
-                                            (str/split path #"/")))
+  (let [way (filter #(not (empty? %)) 
+                    (reduce #(if (and 
+                                 (= %2 "..") 
+                                 (not-empty %1)) 
+                             (pop %1) 
+                             (if (= %2 ".") %1 (conj %1 %2))) 
+                          [] 
+                          (str/split path #"/")))
         head (first way)
         waypoints (rest way)]
     (if (empty? way)
