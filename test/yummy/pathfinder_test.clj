@@ -89,20 +89,19 @@
                   '())
                )       
            )
-  (testing "Asterisk-path"
-           ;;все с на расстоянии >= 0 уровней от b
-           (is (= (get-tag "b/*/c" tst-tag)
-                  '({:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} 
-                     {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}))
-               )
+  (testing "Dot-path"
            ;;все с на расстоянии 1 уровней от b
-           (is (= (get-tag "b/*/*/c" tst-tag)
+           (is (= (get-tag "b/./c" tst-tag)
                   '({:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}))
-               )             
-           ;;все с на расстоянии 2 уровней от а
-           (is (= (get-tag "a/*/*/*/c" tst-tag)
-                  '({:tag :c, :attrs {}, :content [58]}
+               )
+           ;;все с на расстоянии 2 уровней от a
+           (is (= (get-tag "a/././c" tst-tag)
+                  '({:tag :c, :attrs {}, :content [58]} 
                      {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}))
+               )             
+           ;;все t на расстоянии 3 уровней от а
+           (is (= (get-tag "a/./././t" tst-tag)
+                  '({:tag :t, :attrs {}, :content []}))
                )             
            )
     (testing "Params-path"
@@ -125,28 +124,84 @@
                      {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}))
                )                      
            ;;дочерние тэги а
-            (is (= (get-tag "a/*" tst-tag)
+            (is (= (get-tag "a/." tst-tag)
                   '({:tag :c, :attrs {}, :content [65 {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]}]} 
                      {:tag :b, :attrs {}, :content [{:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}]}))
                )
            ;;дочерние тэги тэга по указанному адресу
-            (is (= (get-tag "a/b/*" tst-tag)
+            (is (= (get-tag "a/b/." tst-tag)
                   '({:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} 
                      {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}))
                )            
-           ;;дочерние тэги тэгов ниже а, обладающих указанными атрибутами  
+           ;;дочерние тэги c тэгов ниже а, обладающих указанными атрибутами  
            (is (= (get-tag "a/*@[key=val]/c" tst-tag)
                   '({:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}))
                )
-           ;;...  
-           (is (= (get-tag "a/*@[key=val]/*/t" tst-tag)
-                  '({:tag :t, :attrs {}, :content []}))
+           ;;дочерние тэги c тэгов дочерних тэгов а, обладающих указанными атрибутами  
+           (is (= (get-tag "a/.@[key=val]/c" tst-tag)
+                  '())
                )
+
            )
-    (testing "Same tag"
-           ;; . означает текущий тэг и влияния не имеет. Но поддерживается.
-           (is (= (get-tag "a/b/./c" tst-tag)
-                  '({:content [2 3], :attrs {:key "val", :k "5"}, :tag :c}))
+    (testing "Asterisk-path"
+           ;; все тэги с такими атрибутами.
+           (is (= (get-tag "*@[key=val]" tst-tag)
+                  '({:tag :a, :attrs {:key "val"}, :content [23 25 {:tag :c, :attrs {}, :content [65 {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]}]} {:tag :b, :attrs {}, :content [{:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}]}]} 
+                     {:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} 
+                     {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}))
                )
-             ))
+           ;; все тэги с такими атрибутами.
+           (is (= (get-tag "$/*@[key=val]" tst-tag)
+                  '({:tag :a, :attrs {:key "val"}, :content [23 25 {:tag :c, :attrs {}, :content [65 {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]}]} {:tag :b, :attrs {}, :content [{:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}]}]} 
+                     {:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} 
+                     {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}))
+               )
+           ;; аще ВСЕ
+           (is (= (get-tag "$/*" tst-tag)
+                  '({:tag :a, :attrs {:key "val"}, :content [23 25 {:tag :c, :attrs {}, :content [65 {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]}]} {:tag :b, :attrs {}, :content [{:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}]}]}
+                     {:tag :c, :attrs {}, :content [65 {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]}]} 
+                     {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]} 
+                     {:tag :c, :attrs {}, :content [58]} 
+                     {:tag :b, :attrs {}, :content [{:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}]} 
+                     {:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} 
+                     {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]} 
+                     {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]} 
+                     {:tag :t, :attrs {}, :content []}))
+               )
+           ;; аще ВСЕ
+           (is (= (get-tag "*" tst-tag)
+                  '({:tag :a, :attrs {:key "val"}, :content [23 25 {:tag :c, :attrs {}, :content [65 {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]}]} {:tag :b, :attrs {}, :content [{:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}]}]}
+                     {:tag :c, :attrs {}, :content [65 {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]}]} 
+                     {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]} 
+                     {:tag :c, :attrs {}, :content [58]} 
+                     {:tag :b, :attrs {}, :content [{:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}]} 
+                     {:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} 
+                     {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]} 
+                     {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]} 
+                     {:tag :t, :attrs {}, :content []}))
+              )
+            ;;все с на любом расстоянии от a
+           (is (= (get-tag "a/*/c" tst-tag)
+                  '({:tag :c, :attrs {}, :content [65 {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]}]} 
+                     {:tag :c, :attrs {}, :content [58]} 
+                     {:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} 
+                     {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}))
+               )
+           ;;дочерние тэги c тэгов тэгов через 1 уровень от а, обладающих указанными атрибутами  
+           (is (= (get-tag "a/./.@[key=val]/c" tst-tag)
+                  '({:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}))
+               )
+           ;;...  
+           (is (= (get-tag "a/*@[key=val]/./t" tst-tag)
+                  '({:tag :t, :attrs {}, :content []}))
+               )           
+           ;;root tag by default  
+           (is (= (get-tag "." tst-tag)
+                  '({:tag :a, :attrs {:key "val"}, :content [23 25 {:tag :c, :attrs {}, :content [65 {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]}]} {:tag :b, :attrs {}, :content [{:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}]}]}))
+               )           
+           ;;the same case as previous  
+           (is (= (get-tag "$/." tst-tag)
+                  '({:tag :a, :attrs {:key "val"}, :content [23 25 {:tag :c, :attrs {}, :content [65 {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]}]} {:tag :b, :attrs {}, :content [{:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}]}]}))
+               )           
+           ))
 (run-tests)
