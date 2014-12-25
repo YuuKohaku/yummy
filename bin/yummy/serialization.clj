@@ -9,7 +9,7 @@
 
 (defn deserialize [exp]
   {:post [(yummy-valid? exp)]}
-  (binding [*read-eval* false]
+  (binding [.read-eval. false]
     (edn/read-string exp)
    )
 )

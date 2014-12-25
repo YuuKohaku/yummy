@@ -6,20 +6,23 @@
 
 ;; pathfinder provides a single function get-tag to perform search in given yummy tree.
 ;; get-tag [path-to-element yummy-tree]
-;; path may contain some of listed elements: $ .. . @[<attrs list>] *
+;; path may contain some of listed elements: $ .. . @[<attrs list>] .
 ;; $ - tree root. Path "$/a/b" (absolute path) means that the pathfinder will start the search from the root tag.
 ;; In this case, pathfinder will return a list of matching tags (all "b" with parent root tag "a"). 
 ;; Relative path "a/b" or "/a/b" (these are the same case) will return a list of all
 ;; tags "b" with parent "a".
 ;; .. - path to parent tag. Path like "a/b/c/../d" cases pathfinder to search tag "a/b/d"
-;; . - path to current tag. "a/b/./c" simply equal to "a/b/c"
 ;; tagname@[key=value] cases pathfinder to check tag attributes and return only name and attrs matching tags
-;; * means any tag. Usage for this is not trivial.
-;; "a/*" returns all child tags of a (distance = 0)
-;; "a/*/c" returns all "c" with distance >=0 from "a"
-;; "a/*/*/c" returns all "c" with distance == 1 from "a"
+;; * means all tags tag including root.
+;; . means children tags.
+;; "a/." returns all children of "a" (distance = 0)
+;; "a/./c" returns all "c" within distance 1 from "a"
+;; "a/*/c" returns all "c" within any distance from "a"
+;; "a/././c" returns all "c" with distance 2 from "a"
 ;; "a/*@[key=value]" returns all tags with attrs containing {:key "value"}
+;; "a/.@[key=value]" returns all children of "a" with attrs containing {:key "value"}
 ;; "a/*@[key=value]/c" returns all "c" that are children of any tags under "a" with attrs containing {:key "value"}
+;; "a/.@[key=value]/c" returns all "c" that are children of children of "a" with attrs containing {:key "value"}
 
 ;; true if search attrs are present in given map
 ;; used in pathfinder and restructure
@@ -44,22 +47,25 @@
       elem (first comps),
       attrs (get-attrs comps)]
   (cond
+    (= elem ".") (if (map-cmp (exp :attrs) attrs) 
+                   (list exp) 
+                   '())
     (and 
       (= elem "*")
-      (empty? attrs)) 
-    (filter 
-      #(yummy-object? %) 
-      (exp :content))
+      (empty? attrs)) (flatten   
+                      (concat
+                        (list exp)
+                        (map #(retrieve % el) 
+                             (filter yummy-object? (exp :content)))
+                        ))
     (and 
       (= elem "*")
       (map? attrs)) (flatten   
                       (concat
                         (if (map-cmp (exp :attrs) attrs) (list exp) '())
                         (map #(retrieve % el) 
-                             (filter #(yummy-object? %) 
-                                     (exp :content)))
-    ))
-    
+                             (filter yummy-object? (exp :content)))
+                        ))
     :else    (flatten   
              (concat
                (if (and 
@@ -80,11 +86,17 @@
         attrs (get-attrs comps)]
     (cond
       (and 
-        (= cur "*") 
+        (= cur ".") 
         (empty? attrs)) (if (empty? nxt)
                           (list exp)
                           (map (partial iterative-search nxt)
-                              (retrieve exp (first nxt))))
+                              (filter yummy-object? (exp :content))))
+      (and 
+        (= cur "*") 
+        (empty? attrs)) (if (empty? nxt)
+                          (retrieve exp (first waypoints))
+                          (map (partial iterative-search nxt)
+                              (retrieve exp (first waypoints))))
        (and 
          (= cur "*") 
          (map? attrs)) (if (empty? nxt)
@@ -98,7 +110,15 @@
                                       '() 
                                       (retrieve exp (first waypoints))))
                          )
-       
+       (and 
+         (= cur ".") 
+         (map? attrs)) (if (map-cmp (exp :attrs) attrs) 
+                         (if (empty? nxt)
+                           (list exp) 
+                           (map (partial iterative-search nxt) 
+                              (filter yummy-object? (exp :content)))
+                           )
+                         '())              
        (and 
          (= (keyword cur) (exp :tag))
          (map-cmp (exp :attrs) attrs)) 
@@ -121,17 +141,19 @@
                                  (= %2 "..") 
                                  (not-empty %1)) 
                              (pop %1) 
-                             (if (= %2 ".") %1 (conj %1 %2))) 
+                             (conj %1 %2)) 
                           [] 
                           (str/split path #"/")))
         head (first way)
         waypoints (rest way)]
     (if (empty? way)
     '()
-    (flatten
-    (if (= "$" head)
-      (iterative-search waypoints exp)
-      (map (partial iterative-search way) 
-           (filter yummy-object? (retrieve exp head)))))
-  ))
+    (distinct
+      (flatten
+         (if (= "$" head)
+           (iterative-search waypoints exp)
+           (map (partial iterative-search way) 
+                (filter yummy-object? (retrieve exp head)))))
+  )))
 )
+
