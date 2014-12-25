@@ -103,6 +103,28 @@
            (is (= (get-tag "a/./././t" tst-tag)
                   '({:tag :t, :attrs {}, :content []}))
                )             
+          ;;дочерние тэги а
+            (is (= (get-tag "a/." tst-tag)
+                  '({:tag :c, :attrs {}, :content [65 {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]}]} 
+                     {:tag :b, :attrs {}, :content [{:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}]}))
+               )
+           ;;дочерние тэги тэга по указанному адресу
+            (is (= (get-tag "a/b/." tst-tag)
+                  '({:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} 
+                     {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}))
+               )            
+           ;;дочерние тэги c тэгов тэгов через 1 уровень от а, обладающих указанными атрибутами  
+           (is (= (get-tag "a/./.@[key=val]/c" tst-tag)
+                  '({:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}))
+               )
+           ;;root tag by default  
+           (is (= (get-tag "." tst-tag)
+                  '({:tag :a, :attrs {:key "val"}, :content [23 25 {:tag :c, :attrs {}, :content [65 {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]}]} {:tag :b, :attrs {}, :content [{:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}]}]}))
+               )           
+           ;;the same case as previous  
+           (is (= (get-tag "$/." tst-tag)
+                  '({:tag :a, :attrs {:key "val"}, :content [23 25 {:tag :c, :attrs {}, :content [65 {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]}]} {:tag :b, :attrs {}, :content [{:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}]}]}))
+               )           
            )
     (testing "Params-path"
            ;;все с, имеющие указанные атрибуты
@@ -123,17 +145,7 @@
                   '({:content [2 3], :attrs {:key "val", :k "5"}, :tag :c}
                      {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}))
                )                      
-           ;;дочерние тэги а
-            (is (= (get-tag "a/." tst-tag)
-                  '({:tag :c, :attrs {}, :content [65 {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]}]} 
-                     {:tag :b, :attrs {}, :content [{:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}]}))
-               )
-           ;;дочерние тэги тэга по указанному адресу
-            (is (= (get-tag "a/b/." tst-tag)
-                  '({:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} 
-                     {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}))
-               )            
-           ;;дочерние тэги c тэгов ниже а, обладающих указанными атрибутами  
+            ;;дочерние тэги c тэгов ниже а, обладающих указанными атрибутами  
            (is (= (get-tag "a/*@[key=val]/c" tst-tag)
                   '({:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}))
                )
@@ -141,7 +153,10 @@
            (is (= (get-tag "a/.@[key=val]/c" tst-tag)
                   '())
                )
-
+           ;;дочерние тэги c тэгов дочерних тэгов b, обладающих указанными атрибутами  
+           (is (= (get-tag "b/.@[key=val]/c" tst-tag)
+                  '({:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}))
+               )
            )
     (testing "Asterisk-path"
            ;; все тэги с такими атрибутами.
@@ -187,21 +202,9 @@
                      {:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} 
                      {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}))
                )
-           ;;дочерние тэги c тэгов тэгов через 1 уровень от а, обладающих указанными атрибутами  
-           (is (= (get-tag "a/./.@[key=val]/c" tst-tag)
-                  '({:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}))
-               )
            ;;...  
-           (is (= (get-tag "a/*@[key=val]/./t" tst-tag)
+           (is (= (get-tag "a/*@[key=val]/*/t" tst-tag)
                   '({:tag :t, :attrs {}, :content []}))
-               )           
-           ;;root tag by default  
-           (is (= (get-tag "." tst-tag)
-                  '({:tag :a, :attrs {:key "val"}, :content [23 25 {:tag :c, :attrs {}, :content [65 {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]}]} {:tag :b, :attrs {}, :content [{:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}]}]}))
-               )           
-           ;;the same case as previous  
-           (is (= (get-tag "$/." tst-tag)
-                  '({:tag :a, :attrs {:key "val"}, :content [23 25 {:tag :c, :attrs {}, :content [65 {:tag :e, :attrs {:k "5"}, :content ["branch" {:tag :c, :attrs {}, :content [58]}]}]} {:tag :b, :attrs {}, :content [{:content [2 3], :attrs {:key "val", :k "5"}, :tag :c} {:tag :d, :attrs {:key "val"}, :content [2 3 {:tag :c, :attrs {}, :content [85 {:tag :t, :attrs {}, :content []}]}]}]}]}))
                )           
            ))
 (run-tests)

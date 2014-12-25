@@ -50,22 +50,12 @@
     (= elem ".") (if (map-cmp (exp :attrs) attrs) 
                    (list exp) 
                    '())
-    (and 
-      (= elem "*")
-      (empty? attrs)) (flatten   
-                      (concat
-                        (list exp)
-                        (map #(retrieve % el) 
-                             (filter yummy-object? (exp :content)))
-                        ))
-    (and 
-      (= elem "*")
-      (map? attrs)) (flatten   
-                      (concat
-                        (if (map-cmp (exp :attrs) attrs) (list exp) '())
-                        (map #(retrieve % el) 
-                             (filter yummy-object? (exp :content)))
-                        ))
+    (= elem "*") (flatten   
+                   (concat
+                     (if (map-cmp (exp :attrs) attrs) (list exp) '())
+                     (map #(retrieve % el) 
+                          (filter yummy-object? (exp :content)))
+                     ))
     :else    (flatten   
              (concat
                (if (and 
@@ -99,12 +89,11 @@
                               (retrieve exp (first waypoints))))
        (and 
          (= cur "*") 
-         (map? attrs)) (if (empty? nxt)
-                         (concat
-                           (if (map-cmp (exp :attrs) attrs) (list exp) '())
-                           (map #(retrieve % (first waypoints))
-                                (filter #(yummy-object? %) 
-                                (exp :content))))
+         (not-empty attrs)) (if (empty? nxt)
+                              (concat
+                                (if (map-cmp (exp :attrs) attrs) (list exp) '())
+                                (map #(retrieve % (first waypoints))
+                                (filter yummy-object? (exp :content))))
                          (map (partial iterative-search nxt) 
                               (reduce #(concat %1 (filter yummy-object? (%2 :content))) 
                                       '() 
@@ -112,13 +101,13 @@
                          )
        (and 
          (= cur ".") 
-         (map? attrs)) (if (map-cmp (exp :attrs) attrs) 
+         (not-empty attrs)) (if (map-cmp (exp :attrs) attrs) 
                          (if (empty? nxt)
-                           (list exp) 
-                           (map (partial iterative-search nxt) 
+                                (list exp) 
+                                (map (partial iterative-search nxt) 
                               (filter yummy-object? (exp :content)))
-                           )
-                         '())              
+                                )
+                              '())              
        (and 
          (= (keyword cur) (exp :tag))
          (map-cmp (exp :attrs) attrs)) 
