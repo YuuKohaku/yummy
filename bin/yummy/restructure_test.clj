@@ -691,8 +691,8 @@
                                         ]} 
                              {:tag :b, 
                               :attrs {}, 
-                              :content [{:tag :CHANGED
-                                         :attrs {:key "CHANGED"}
+                              :content [{:tag :c
+                                         :attrs {:key "val" :k "5"}
                                          :content [2 3]}
                                         {:tag :d, 
                                          :attrs {:key "val"}, 
@@ -705,6 +705,41 @@
                                                    ]}
                                         ]}
                              ]})
+               )
+      ;;the same
+            (is (= (set-tag "*@[key=val]/c" tst-tag re-tag)
+                  {:tag :a, 
+                   :attrs {:key "val"}, 
+                   :content [23 25 
+                             {:tag :CHANGED, 
+                              :attrs {:key "CHANGED"} 
+                              :content [65 {:tag :e, 
+                                            :attrs {:k "5"}, 
+                                            :content ["branch" {:tag :c, 
+                                                                :attrs {}, 
+                                                                :content [58]}
+                                                      ]}
+                                        ]} 
+                             {:tag :b, 
+                              :attrs {}, 
+                              :content [{:tag :c
+                                         :attrs {:key "val" :k "5"}
+                                         :content [2 3]}
+                                        {:tag :d, 
+                                         :attrs {:key "val"}, 
+                                         :content [2 3 {:tag :CHANGED, 
+                                                        :attrs {:key "CHANGED"}, 
+                                                        :content [85 {:tag :t, 
+                                                                      :attrs {}, 
+                                                                      :content []}
+                                                                  ]}
+                                                   ]}
+                                        ]}
+                             ]})
+               )
+           ;; ...
+           (is (= (set-tag "$/a/*@[key=val]/t" tst-tag re-tag)
+                  tst-tag)
                )
       ))
 (run-tests)

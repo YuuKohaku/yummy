@@ -38,7 +38,14 @@
                                                  %)
                                               (exp :content))
                                          ))
-                          (iterative-replace wp new-tag exp))
+                          (iterative-replace wp new-tag (assoc exp :content
+                            (reduce #(into %1 [%2])
+                                       []
+                                       (map #(if (yummy-object? %)
+                                               (restruct % wp new-tag)
+                                               %)
+                                            (exp :content))
+                                       ))))
                         (assoc exp :content
                             (reduce #(into %1 [%2])
                                        []
