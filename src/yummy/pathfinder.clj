@@ -37,7 +37,7 @@
   (if (empty? (rest comps))
     {} 
     (keywordize-keys 
-      (apply hash-map (re-seq #"\w+" (second comps))))))
+      (apply hash-map (re-seq #"[a-z0-9-]+" (second comps))))))
 
 ;; following two functions differ by search algo and recursively search specified tags
 ;; Both should never be used outside the pathfinder module. 

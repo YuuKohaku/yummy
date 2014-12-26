@@ -128,6 +128,7 @@
                                         ]}
                              ]}
                   ))
+           ;;enumerate paragraphs
           (is (= (reduce 
                    #(set-content :prepend 0 (str "li@[order=" %2 "]") %1 (str %2) )
                    toc
@@ -167,6 +168,117 @@
                                         ]}
                              ]}
                   ))
-          )
+         )
+  (testing "Insert-test"
+  (is (= (set-content :insert 1 "section" toc "TEST" ) 
+                 {:tag :table-of-contents, 
+                  :attrs {:name "table-of-contents"}, 
+                  :content [
+                            {:tag :title, 
+                             :attrs {}, 
+                             :content ["Table of contents"]} 
+                            {:tag :section, 
+                             :attrs {}, 
+                              :content [
+                                        {:content ["Chapter 1"],
+                                         :attrs {:name "section-title"},
+                                         :tag :title}
+                                "TEST"
+                                        {:tag :list
+                                         :attrs {:name "links"}, 
+                                         :content [{:content ["Paragraph"], :attrs {:order "1"}, :tag :li}
+                                                   {:content ["Paragraph"], :attrs {:order "2"}, :tag :li}
+                                                   {:content ["Paragraph"], :attrs {:order "3"}, :tag :li}
+                                                   ]}
+                                        ]} 
+                             {:tag :section, 
+                              :attrs {}, 
+                              :content [
+                                        {:content ["Chapter 2"], 
+                                         :attrs {:name "section-title"}, 
+                                         :tag :title} 
+                                "TEST"
+                                        {:tag :list
+                                         :attrs {:name "links"}, 
+                                         :content [{:content ["Paragraph"], :attrs {:order "1"}, :tag :li}
+                                                   {:content ["Paragraph"], :attrs {:order "2"}, :tag :li}
+                                                   {:content ["Paragraph"], :attrs {:order "3"}, :tag :li}
+                                                   ]}
+                                        ]}
+                             ]}
+                  ))
+  (is (= (set-content :insert 1 "*@[name=table-of-contents]/./." toc "TEST" ) 
+                 {:tag :table-of-contents, 
+                  :attrs {:name "table-of-contents"}, 
+                  :content [
+                            {:tag :title, 
+                             :attrs {}, 
+                             :content ["Table of contents"]} 
+                            {:tag :section, 
+                             :attrs {}, 
+                              :content [
+                                        {:content ["Chapter 1" "TEST"],
+                                         :attrs {:name "section-title"},
+                                         :tag :title}
+                                        {:tag :list
+                                         :attrs {:name "links"}, 
+                                         :content [{:content ["Paragraph"], :attrs {:order "1"}, :tag :li}
+                                                   "TEST"
+                                                   {:content ["Paragraph"], :attrs {:order "2"}, :tag :li}
+                                                   {:content ["Paragraph"], :attrs {:order "3"}, :tag :li}
+                                                   ]}
+                                        ]} 
+                             {:tag :section, 
+                              :attrs {}, 
+                              :content [
+                                        {:content ["Chapter 2" "TEST"], 
+                                         :attrs {:name "section-title"}, 
+                                         :tag :title} 
+                                        {:tag :list
+                                         :attrs {:name "links"}, 
+                                         :content [{:content ["Paragraph"], :attrs {:order "1"}, :tag :li}
+                                                   "TEST"
+                                                   {:content ["Paragraph"], :attrs {:order "2"}, :tag :li}
+                                                   {:content ["Paragraph"], :attrs {:order "3"}, :tag :li}
+                                                   ]}
+                                        ]}
+                             ]}
+                  ))
+   (is (= (set-content :replace 1 "*@[name=table-of-contents]/./." toc "TEST" ) 
+                 {:tag :table-of-contents, 
+                  :attrs {:name "table-of-contents"}, 
+                  :content [
+                            {:tag :title, 
+                             :attrs {}, 
+                             :content ["Table of contents"]} 
+                            {:tag :section, 
+                             :attrs {}, 
+                              :content [
+                                        {:content ["Chapter 1" "TEST"],
+                                         :attrs {:name "section-title"},
+                                         :tag :title}
+                                        {:tag :list
+                                         :attrs {:name "links"}, 
+                                         :content [{:content ["Paragraph"], :attrs {:order "1"}, :tag :li}
+                                                   "TEST"
+                                                   {:content ["Paragraph"], :attrs {:order "3"}, :tag :li}
+                                                   ]}
+                                        ]} 
+                             {:tag :section, 
+                              :attrs {}, 
+                              :content [
+                                        {:content ["Chapter 2" "TEST"], 
+                                         :attrs {:name "section-title"}, 
+                                         :tag :title} 
+                                        {:tag :list
+                                         :attrs {:name "links"}, 
+                                         :content [{:content ["Paragraph"], :attrs {:order "1"}, :tag :li}
+                                                   "TEST"
+                                                   {:content ["Paragraph"], :attrs {:order "3"}, :tag :li}
+                                                   ]}
+                                        ]}
+                             ]}
+                  ))
+   )
   )
 (run-tests)

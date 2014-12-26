@@ -140,8 +140,8 @@
                                                           (refill how pos %2 waypoints new-content)
                                                           %2)]) 
                                              [] 
-                                             (exp :content))) 
-                                  new-content pos)
+                                             (exp :content)) 
+                                  new-content pos))
                            (merge exp (refill how pos exp nxt new-content)))
       (and
         (= cur "*")
