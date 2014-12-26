@@ -1,59 +1,7 @@
 (ns yummy.restructure-test
   (:require [clojure.test :refer :all]
             [yummy.restructure :refer :all]))
-(def table-of-contents
-  {:tag :table-of-contents
-   :attrs {:name "table-of-contents"}
-   :content [
-           {:tag :title
-            :attrs {}
-            :content ["Table of contents"]}
-           {:tag :section
-            :attrs {}
-            :content [
-                      {:tag :title
-                       :attrs {:name "section-title"}
-                       :content ["Chapter 1"]
-                       }
-                      {:tag :list
-                       :attrs {:name "links"}
-                       :content [
-                                 {:tag :li
-                                  :attrs {:order "1"}
-                                  :content ["Paragraph"]}
-                                 {:tag :li
-                                  :attrs {:order "2"}
-                                  :content ["Paragraph"]}
-                                 {:tag :li
-                                  :attrs {:order "3"}
-                                  :content ["Paragraph"]}
-                                 ]
-                       } 
-                      ]}
-           {:tag :section
-            :attrs {}
-            :content [
-                      {:tag :title
-                       :attrs {:name "section-title"}
-                       :content ["Chapter 2"]
-                       }
-                      {:tag :list
-                       :attrs {:name "links"}
-                       :content [
-                                 {:tag :li
-                                  :attrs {:order "1"}
-                                  :content ["Paragraph"]}
-                                 {:tag :li
-                                  :attrs {:order "2"}
-                                  :content ["Paragraph"]}
-                                 {:tag :li
-                                  :attrs {:order "3"}
-                                  :content ["Paragraph"]}
-                                 ]
-                       } 
-                      ]}
-           ]
- })
+
 (def tst-tag {:tag :a 
               :attrs {:key "val" }
               :content [23
