@@ -131,7 +131,7 @@
           (is (= (reduce 
                    #(set-content :prepend 0 (str "li@[order=" %2 "]") %1 (str %2) )
                    toc
-                   (range 3)
+                   (range 10)
                    ) 
                   {:tag :table-of-contents, 
                    :attrs {:name "table-of-contents"}, 
