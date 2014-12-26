@@ -338,6 +338,7 @@
                              ]}
                   )
                )             
+
            ;;все t на расстоянии 3 уровней от а
       (is (= (set-tag "a/./././t" tst-tag re-tag)
                    {:tag :a, 
@@ -369,77 +370,6 @@
                              ]}
                   )
           )   
-      )
-    (testing "Params-path"
-           ;;все с, имеющие указанные атрибуты
-           (is (= (set-tag "c@[key=val]" tst-tag re-tag)
-                  {:tag :a, 
-                   :attrs {:key "val"}, 
-                   :content [23 25 {:tag :c, 
-                                    :attrs {}, 
-                                    :content [65 {:tag :e, 
-                                                  :attrs {:k "5"}, 
-                                                  :content ["branch" {:tag :c, 
-                                                                      :attrs {}, 
-                                                                      :content [58]}
-                                                            ]}
-                                              ]}
-                             {:tag :b, 
-                              :attrs {}, 
-                              :content [{:tag :CHANGED, 
-                                         :attrs {:key "CHANGED"}, 
-                                         :content [2 3]} 
-                                        {:tag :d, 
-                                         :attrs {:key "val"},
-                                         :content [2 3 {:tag :c, 
-                                                        :attrs {},
-                                                        :content [85 {:tag :t, 
-                                                                      :attrs {},
-                                                                      :content []}
-                                                                  ]}
-                                                   ]}
-                                        ]}
-                             ]} 
-                  )
-           )           
-           ;;все тэги, имеющие указанные атрибуты
-           (is (= (set-tag "*@[key=val,k=5]" tst-tag re-tag)
-                  {:tag :a, 
-                   :attrs {:key "val"}, 
-                   :content [23 25 {:tag :c, 
-                                    :attrs {}, 
-                                    :content [65 {:tag :e, 
-                                                  :attrs {:k "5"}, 
-                                                  :content ["branch" {:tag :c, 
-                                                                      :attrs {}, 
-                                                                      :content [58]}
-                                                            ]}
-                                              ]}
-                             {:tag :b, 
-                              :attrs {}, 
-                              :content [{:tag :CHANGED, 
-                                         :attrs {:key "CHANGED"}, 
-                                         :content [2 3]} 
-                                        {:tag :d, 
-                                         :attrs {:key "val"},
-                                         :content [2 3 {:tag :c, 
-                                                        :attrs {},
-                                                        :content [85 {:tag :t, 
-                                                                      :attrs {},
-                                                                      :content []}
-                                                                  ]}
-                                                   ]}
-                                        ]}
-                             ]} 
-                  )
-               )           
-
-           ;;все дочерние тэги а, имеющие указанные атрибуты
-           (is (= (set-tag "a/.@[key=val]" tst-tag re-tag)
-                   tst-tag 
-                  )
-               )                      
-       
            ;;дочерние тэги а
             (is (= (set-tag "a/." tst-tag re-tag)
                    {:tag :a, 
@@ -500,48 +430,8 @@
                                                     ]}
                                          ]}
                               ]}
-)
-               )            
-           ;;дочерние тэги c тэгов ниже b, обладающих указанными атрибутами  
-           (is (= (set-tag "b/.@[key=val]/c" tst-tag re-tag)
-                  {:tag :a, 
-                   :attrs {:key "val"}, 
-                   :content [23 25 {:tag :c, 
-                                    :attrs {}, 
-                                    :content [65 {:tag :e,
-                                                  :attrs {:k "5"},
-                                                  :content ["branch" {:tag :c,
-                                                                      :attrs {},
-                                                                      :content [58]}
-                                                            ]}
-                                              ]} 
-                             {:tag :b, 
-                              :attrs {},
-                              :content [{:content [2 3],
-                                         :attrs {:key "val", :k "5"},
-                                         :tag :c} 
-                                        {:tag :d, 
-                                         :attrs {:key "val"},
-                                         :content [2 3 {:tag :CHANGED, 
-                                                        :attrs {:key "CHANGED"}, 
-                                                        :content [85 {:tag :t,
-                                                                      :attrs {}, 
-                                                                      :content []}
-                                                                  ]}
-                                                   ]}
-                                        ]}
-                             ]})
-               )
-           )
-    (testing "Asterisk-path"
-           ;; all tags
-           (is (= (set-tag "*" tst-tag re-tag)
-                  {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [23 25 {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [65 {:tag :CHANGED, :attrs {:key "CHANGED"}, :content ["branch" {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [58]}]}]} {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [{:tag :CHANGED, :attrs {:key "CHANGED"}, :content [2 3]} {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [2 3 {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [85 {:tag :CHANGED, :attrs {:key "CHANGED"}, :content []}]}]}]}]})
-               )
-           ;; all tags
-           (is (= (set-tag "$/*" tst-tag re-tag)
-                  {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [23 25 {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [65 {:tag :CHANGED, :attrs {:key "CHANGED"}, :content ["branch" {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [58]}]}]} {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [{:tag :CHANGED, :attrs {:key "CHANGED"}, :content [2 3]} {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [2 3 {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [85 {:tag :CHANGED, :attrs {:key "CHANGED"}, :content []}]}]}]}]})
-               )
+                   )
+                )   
            ;; root children
            (is (= (set-tag "." tst-tag re-tag)
                   {:tag :CHANGED 
@@ -616,6 +506,150 @@
                                         ]}
                              ]})
                )
+           )
+    (testing "Params-path"
+           ;;все с, имеющие указанные атрибуты
+           (is (= (set-tag "c@[key=val]" tst-tag re-tag)
+                  {:tag :a, 
+                   :attrs {:key "val"}, 
+                   :content [23 25 {:tag :c, 
+                                    :attrs {}, 
+                                    :content [65 {:tag :e, 
+                                                  :attrs {:k "5"}, 
+                                                  :content ["branch" {:tag :c, 
+                                                                      :attrs {}, 
+                                                                      :content [58]}
+                                                            ]}
+                                              ]}
+                             {:tag :b, 
+                              :attrs {}, 
+                              :content [{:tag :CHANGED, 
+                                         :attrs {:key "CHANGED"}, 
+                                         :content [2 3]} 
+                                        {:tag :d, 
+                                         :attrs {:key "val"},
+                                         :content [2 3 {:tag :c, 
+                                                        :attrs {},
+                                                        :content [85 {:tag :t, 
+                                                                      :attrs {},
+                                                                      :content []}
+                                                                  ]}
+                                                   ]}
+                                        ]}
+                             ]} 
+                  )
+           )           
+           ;;все тэги, имеющие указанные атрибуты
+           (is (= (set-tag "*@[key=val,k=5]" tst-tag re-tag)
+                  {:tag :a, 
+                   :attrs {:key "val"}, 
+                   :content [23 25 {:tag :c, 
+                                    :attrs {}, 
+                                    :content [65 {:tag :e, 
+                                                  :attrs {:k "5"}, 
+                                                  :content ["branch" {:tag :c, 
+                                                                      :attrs {}, 
+                                                                      :content [58]}
+                                                            ]}
+                                              ]}
+                             {:tag :b, 
+                              :attrs {}, 
+                              :content [{:tag :CHANGED, 
+                                         :attrs {:key "CHANGED"}, 
+                                         :content [2 3]} 
+                                        {:tag :d, 
+                                         :attrs {:key "val"},
+                                         :content [2 3 {:tag :c, 
+                                                        :attrs {},
+                                                        :content [85 {:tag :t, 
+                                                                      :attrs {},
+                                                                      :content []}
+                                                                  ]}
+                                                   ]}
+                                        ]}
+                             ]} 
+                  )
+               )           
+
+           ;;все дочерние тэги а, имеющие указанные атрибуты
+           (is (= (set-tag "a/.@[key=val]" tst-tag re-tag)
+                   tst-tag 
+                  )
+               )                      
+       
+         
+           ;;дочерние тэги c тэгов ниже b, обладающих указанными атрибутами  
+           (is (= (set-tag "b/.@[key=val]/c" tst-tag re-tag)
+                  {:tag :a, 
+                   :attrs {:key "val"}, 
+                   :content [23 25 {:tag :c, 
+                                    :attrs {}, 
+                                    :content [65 {:tag :e,
+                                                  :attrs {:k "5"},
+                                                  :content ["branch" {:tag :c,
+                                                                      :attrs {},
+                                                                      :content [58]}
+                                                            ]}
+                                              ]} 
+                             {:tag :b, 
+                              :attrs {},
+                              :content [{:content [2 3],
+                                         :attrs {:key "val", :k "5"},
+                                         :tag :c} 
+                                        {:tag :d, 
+                                         :attrs {:key "val"},
+                                         :content [2 3 {:tag :CHANGED, 
+                                                        :attrs {:key "CHANGED"}, 
+                                                        :content [85 {:tag :t,
+                                                                      :attrs {}, 
+                                                                      :content []}
+                                                                  ]}
+                                                   ]}
+                                        ]}
+                             ]})
+               )
+           ;;...
+      (is (= (set-tag "a/./.@[key=val]/c" tst-tag re-tag)
+                   {:tag :a, 
+                   :attrs {:key "val"}, 
+                   :content [23 25 {:tag :c,
+                                    :attrs {},
+                                    :content [65 {:tag :e,
+                                                  :attrs {:k "5"},
+                                                  :content ["branch" {:tag :c, 
+                                                                      :attrs {}, 
+                                                                      :content [58]}
+                                                            ]}
+                                              ]} 
+                             {:tag :b, 
+                              :attrs {}, 
+                              :content [{:content [2 3],
+                                         :attrs {:key "val", :k "5"}, 
+                                         :tag :c} 
+                                        {:tag :d, 
+                                         :attrs {:key "val"}, 
+                                         :content [2 3 {:tag :CHANGED,
+                                                        :attrs {:key "CHANGED"}, 
+                                                        :content [85 {:tag :t, 
+                                                                      :attrs {}, 
+                                                                      :content []}
+                                                                  ]}
+                                                   ]}
+                                        ]}
+                             ]}
+                  )
+          )   
+      )
+    (testing "Asterisk-path"
+           ;; all tags
+           (is (= (set-tag "*" tst-tag re-tag)
+                  {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [23 25 {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [65 {:tag :CHANGED, :attrs {:key "CHANGED"}, :content ["branch" {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [58]}]}]} {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [{:tag :CHANGED, :attrs {:key "CHANGED"}, :content [2 3]} {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [2 3 {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [85 {:tag :CHANGED, :attrs {:key "CHANGED"}, :content []}]}]}]}]})
+               )
+           ;; all tags
+           (is (= (set-tag "$/*" tst-tag re-tag)
+                  {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [23 25 {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [65 {:tag :CHANGED, :attrs {:key "CHANGED"}, :content ["branch" {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [58]}]}]} {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [{:tag :CHANGED, :attrs {:key "CHANGED"}, :content [2 3]} {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [2 3 {:tag :CHANGED, :attrs {:key "CHANGED"}, :content [85 {:tag :CHANGED, :attrs {:key "CHANGED"}, :content []}]}]}]}]})
+               )
+
            ;;все тэги ниже а, имеющие указанные атрибуты
            (is (= (set-tag "a/*@[key=val]" tst-tag re-tag)
                    {:tag :a, 
@@ -677,69 +711,100 @@
                                                            ]})
                )           
       (is (= (set-tag "$/a/*@[key=val]/c" tst-tag re-tag)
-                  {:tag :a, 
-                   :attrs {:key "val"}, 
-                   :content [23 25 
-                             {:tag :c, 
-                              :attrs {}, 
-                              :content [65 {:tag :e, 
-                                            :attrs {:k "5"}, 
-                                            :content ["branch" {:tag :c, 
-                                                                :attrs {}, 
-                                                                :content [58]}
-                                                      ]}
-                                        ]} 
-                             {:tag :b, 
-                              :attrs {}, 
-                              :content [{:tag :c
-                                         :attrs {:key "val" :k "5"}
-                                         :content [2 3]}
-                                        {:tag :d, 
-                                         :attrs {:key "val"}, 
-                                         :content [2 3 {:tag :CHANGED, 
-                                                        :attrs {:key "CHANGED"}, 
-                                                        :content [85 {:tag :t, 
-                                                                      :attrs {}, 
-                                                                      :content []}
-                                                                  ]}
-                                                   ]}
+             {:tag :a, 
+              :attrs {:key "val"}, 
+              :content [23 25 
+                        {:tag :c, 
+                         :attrs {}, 
+                         :content [65 {:tag :e, 
+                                       :attrs {:k "5"}, 
+                                       :content ["branch" {:tag :c, 
+                                                           :attrs {}, 
+                                                           :content [58]}
+                                                 ]}
+                                   ]} 
+                        {:tag :b, 
+                         :attrs {}, 
+                         :content [{:tag :c
+                                    :attrs {:key "val" :k "5"}
+                                    :content [2 3]}
+                                   {:tag :d, 
+                                    :attrs {:key "val"}, 
+                                    :content [2 3 {:tag :CHANGED, 
+                                                   :attrs {:key "CHANGED"}, 
+                                                   :content [85 {:tag :t, 
+                                                                 :attrs {}, 
+                                                                 :content []}
+                                                             ]}
+                                              ]}
                                         ]}
-                             ]})
-               )
+                        ]})
+          )
       ;;the same
-            (is (= (set-tag "*@[key=val]/c" tst-tag re-tag)
-                  {:tag :a, 
-                   :attrs {:key "val"}, 
-                   :content [23 25 
-                             {:tag :CHANGED, 
-                              :attrs {:key "CHANGED"} 
-                              :content [65 {:tag :e, 
-                                            :attrs {:k "5"}, 
-                                            :content ["branch" {:tag :c, 
-                                                                :attrs {}, 
-                                                                :content [58]}
-                                                      ]}
-                                        ]} 
-                             {:tag :b, 
-                              :attrs {}, 
-                              :content [{:tag :c
-                                         :attrs {:key "val" :k "5"}
-                                         :content [2 3]}
-                                        {:tag :d, 
-                                         :attrs {:key "val"}, 
-                                         :content [2 3 {:tag :CHANGED, 
-                                                        :attrs {:key "CHANGED"}, 
-                                                        :content [85 {:tag :t, 
-                                                                      :attrs {}, 
-                                                                      :content []}
-                                                                  ]}
-                                                   ]}
+      (is (= (set-tag "a/*@[key=val]/c" tst-tag re-tag)
+             {:tag :a, 
+              :attrs {:key "val"}, 
+              :content [23 25 
+                        {:tag :c, 
+                         :attrs {}, 
+                         :content [65 {:tag :e, 
+                                       :attrs {:k "5"}, 
+                                       :content ["branch" {:tag :c, 
+                                                           :attrs {}, 
+                                                           :content [58]}
+                                                 ]}
+                                   ]} 
+                        {:tag :b, 
+                         :attrs {}, 
+                         :content [{:tag :c
+                                    :attrs {:key "val" :k "5"}
+                                    :content [2 3]}
+                                   {:tag :d, 
+                                    :attrs {:key "val"}, 
+                                    :content [2 3 {:tag :CHANGED, 
+                                                   :attrs {:key "CHANGED"}, 
+                                                   :content [85 {:tag :t, 
+                                                                 :attrs {}, 
+                                                                 :content []}
+                                                             ]}
+                                              ]}
                                         ]}
-                             ]})
-               )
-           ;; ...
-           (is (= (set-tag "$/a/*@[key=val]/t" tst-tag re-tag)
-                  tst-tag)
-               )
+                        ]})
+          )
+      ;; children c of all tags with such attrs
+      (is (= (set-tag "*@[key=val]/c" tst-tag re-tag)
+             {:tag :a, 
+              :attrs {:key "val"}, 
+              :content [23 25 
+                        {:tag :CHANGED, 
+                         :attrs {:key "CHANGED"} 
+                         :content [65 {:tag :e, 
+                                       :attrs {:k "5"}, 
+                                       :content ["branch" {:tag :c, 
+                                                           :attrs {}, 
+                                                           :content [58]}
+                                                 ]}
+                                   ]} 
+                        {:tag :b, 
+                         :attrs {}, 
+                         :content [{:tag :c
+                                    :attrs {:key "val" :k "5"}
+                                    :content [2 3]}
+                                   {:tag :d, 
+                                    :attrs {:key "val"}, 
+                                    :content [2 3 {:tag :CHANGED, 
+                                                   :attrs {:key "CHANGED"}, 
+                                                   :content [85 {:tag :t, 
+                                                                 :attrs {}, 
+                                                                 :content []}
+                                                             ]}
+                                                   ]}
+                                   ]}
+                        ]})
+          )
+      ;; ...
+      (is (= (set-tag "$/a/*@[key=val]/t" tst-tag re-tag)
+             tst-tag)
+          )
       ))
 (run-tests)
