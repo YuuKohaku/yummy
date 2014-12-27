@@ -25,7 +25,7 @@
 ;; "a/.@[key=value]/c" returns all "c" that are children of children of "a" with attrs containing {:key "value"}
 
 ;; true if search attrs are present in given map
-;; used in pathfinder and restructure
+;; used in pathfinder and restructure 
 (defn map-cmp [search attrs]
   {:pre [(map? search), (map? attrs)]}
   (let [df (diff search attrs)]

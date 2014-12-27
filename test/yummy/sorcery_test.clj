@@ -1,6 +1,7 @@
 (ns yummy.sorcery-test
   (:require [clojure.test :refer :all]
-            [yummy.sorcery :refer :all]))
+            [yummy.sorcery :refer :all]
+            [yummy.pathfinder :refer :all]))
 
 (def toc
   {:tag :table-of-contents
@@ -129,11 +130,14 @@
                              ]}
                   ))
            ;;enumerate paragraphs
-          (is (= (reduce 
-                   #(set-content :prepend 0 (str "li@[order=" %2 "]") %1 (str %2) )
-                   toc
-                   (range 10)
-                   ) 
+          (is (=    (assoc toc :content                                  (reduce #(into %1 [%2])
+                                         []
+                                         (map #(if (yummy-object? %)
+                                                 (restruct % wp new-tag)
+                                                 %)
+                                              (exp :content))
+                                         ))
+
                   {:tag :table-of-contents, 
                    :attrs {:name "table-of-contents"}, 
                    :content [

@@ -1,4 +1,5 @@
-(ns yummy.schema)
+(ns yummy.schema
+  (:require [clojure.data :refer :all]))
 
 ; yummy-schema is yummy-object definition, itself is yummy-object with additional parameters, such as:
 ; :xs - determines type of yummy-object description
@@ -29,22 +30,25 @@
 ;       default: true
 (defn schema-check [schema obj & log]
   (let [xs (schema :xs)
-        xsattrs (schema :attrs)
+        xsattrs (if (map? (schema :attrs)) (schema :attrs) {})
         xscontent (schema :content)
         tag (if (map? obj) (obj :tag) :arr)
         attrs (if (map? obj) (obj :attrs) {})
         content (if (map? obj) (obj :content) :arr)]
-;    (println "xs" xs "xsattrs" xsattrs "xscontent" xscontent "tag" tag "attrs" attrs "content" content)
     (if (some nil? (list xs xscontent tag attrs content))
       (do 
         (if (not (= log '(false))) 
           (println "Failure: can't find necesassary parameter(s)"))
         false)
-      (if (= xs :element)
+      (case xs
+        :schema
+        (schema-check (first xscontent) obj log)
+        :element
 	      (if (and (not (nil? (xsattrs :name))) (not (= (xsattrs :name) tag)))
 	        (do
 	          (if (not (= log '(false))) (println "Wrong tag found:" tag "when" (xsattrs :name) "expected"))
 	          false)
+         (do
 	      (if (and (not (nil? (xsattrs :type))) (not (.contains (xsattrs :type) 
 	                                                   (if (> (count (remove map? content)) 1)
 	                                                     clojure.lang.PersistentVector
@@ -55,17 +59,43 @@
 	                   (if (> (count (remove map? content)) 1) clojure.lang.PersistentVector (class (first (remove map? content))))
 	                   "when" (xsattrs :type) "expected"))
 	          false)
-        (do
-;          (println "fxs" (first xscontent) "obj" (apply vector (filter map? content)) "log" log)
+         (do
+         (if (and (map? (xsattrs :tag-attrs))
+                  (or
+                    (not (reduce (fn [failure attr]
+                                   (do 
+                                   (and failure 
+                                        (if (not (nil? ((xsattrs :tag-attrs) (first attr))))
+                                          (((xsattrs :tag-attrs) (first attr)) (second attr))
+                                          true))))
+                            true
+                            attrs))
+                    (not (reduce (fn [failure limit]
+                                   (do 
+                                   (and failure (((xsattrs :tag-attrs) limit) nil))))
+                            true
+                            (if (nil? (keys attrs))
+                              (if (nil? (keys (xsattrs :tag-attrs))) '() (keys (xsattrs :tag-attrs)))
+                              (remove (fn [x] (.contains (keys attrs) x)) (keys (xsattrs :tag-attrs))))))))
+         (do
+	          (if (not (= log '(false))) (println "Wrong tag attribute found in" tag "tag"))
+	          false)
+         (do
           (if (empty? xscontent)
             (not (some map? content))
-            (schema-check (first xscontent) (apply vector (filter map? content)) log)))))
-       (if (= xs :complexType)
+            (reduce 
+              (fn [failure tagnum]
+                (and failure
+                     (schema-check (if (= 1 (count xscontent))
+                                     (first xscontent)
+                                     (nth xscontent tagnum)) (nth (filter map? content) tagnum) log)))
+              (or (= 1 (count xscontent)) (= (count xscontent) (count (filter map? content))))
+              (range (count (filter map? content)))))))))))
+       :complexType
          (let [xselements ((first xscontent) :content)]
            (if (= ((first xscontent) :xs) :sequence)
              (reduce (fn [failure inner-tag]
                        (do 
-;                         (println failure (some #(= (inner-tag :tag) ((% :attrs) :name)) xselements))
 	                       (and failure
 	                            (if (not (some #(= (inner-tag :tag) ((% :attrs) :name)) xselements))
                                (do
@@ -75,29 +105,69 @@
                                true)
 	                            (schema-check (some #(if (= (inner-tag :tag) ((% :attrs) :name)) %) xselements) inner-tag))))
                      true
-                     obj)
-             false)))))))
+                     (if (vector? obj) obj (list obj)))
+             false))))))
 
-(schema-check {:xs :element :attrs {:name :c :type [Long]} :content []} {:tag :c :attrs {} :content [12 2]})
-(schema-check {:xs :element :attrs {:name :c :type [clojure.lang.PersistentVector]} :content []} {:tag :c :attrs {} :content [12 2]})
-
-(schema-check 
+(schema-check
   {:xs :element
-   :attrs {:name :d} 
-   :content []}
-  {:tag :c
-  :attrs {} 
-  :content []})
-
-(schema-check {:xs :element :attrs {:name :country} :content 
-               [{:xs :complexType :content [{:xs :sequence :content [{:xs :element :attrs {:name :cname} :content []}
-                                                                     {:xs :element :attrs {:name :population} :content []}]}]}]}
-              {:tag :country :attrs {} :content [{:tag :cname :attrs {} :content []}
-                                                 {:tag :population :attrs {} :content []}]})
-
-
-(schema-check {:xs :element :attrs {:name :country} :content 
-                     [{:xs :complexType :content [{:xs :sequence :content [{:xs :element :attrs {:name :cname :type [String]} :content []}
-                                                                           {:xs :element :attrs {:name :population} :content []}]}]}]}
-                    {:tag :country :attrs {} :content [{:tag :cname :attrs {} :content [5]}
-                                                       {:tag :population :attrs {} :content []}]})
+   :attrs {:name :table-of-contents :tag-attrs {:name string?}}
+   :content [{:xs :complexType
+              :content [{:xs :sequence
+                         :content [{:xs :element
+                                    :attrs {:name :title :type [String]}
+                                    :content []}
+                                         
+                                   {:xs :element
+                                    :attrs {:name :section}
+                                    :content [{:xs :element
+                                               :attrs {:name :title :type [String] :tag-attrs {:name string?}}
+                                               :content []}
+                                              {:xs :element
+                                               :attrs {:name :list :tag-attrs {:name string?}}
+                                               :content [{:xs :complexType
+                                                          :content [{:xs :sequence
+                                                                     :content [{:xs :element
+                                                                                :attrs {:name :li :type [String] 
+                                                                                        :tag-attrs {:order 
+                                                                                                    (fn [x] 
+                                                                                                      (and (string? x)
+                                                                                                           (number? (read-string x))))}}
+                                                                                 :content []}]}]}]}]}]}]}]}
+         
+{:tag :table-of-contents
+ :attrs {:name "table-of-contents"}
+ :content [{:tag :title
+					  :attrs {}
+					  :content ["Table of contents"]}
+					 {:tag :section
+					  :attrs {}
+					  :content [{:tag :title
+					             :attrs {:name "section-title"}
+					             :content ["Chapter 1"]}
+                      {:tag :list
+	                     :attrs {:name "links"}
+	                     :content [{:tag :li
+					                        :attrs {:order "1"}
+					                        :content ["Paragraph"]}
+					                       {:tag :li
+					                        :attrs {:order "2"}
+					                        :content ["Paragraph"]}
+					                       {:tag :li
+					                        :attrs {:order "3"}
+					                        :content ["Paragraph"]}]}]}
+           {:tag :section
+					  :attrs {}
+					  :content [{:tag :title
+					             :attrs {:name "section-title"}
+					             :content ["Chapter 2"]}
+                      {:tag :list
+					             :attrs {:name "links"}
+					             :content [{:tag :li
+                                  :attrs {:order "1"}
+					                        :content ["Paragraph"]}
+            				             {:tag :li
+					                        :attrs {:order "2"}
+					                        :content ["Paragraph"]}
+					                       {:tag :li
+					                        :attrs {:order "3"}
+					                        :content ["Paragraph"]}]}]}]})
